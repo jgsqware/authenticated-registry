@@ -1,0 +1,32 @@
+version: '2'
+
+services:
+  auth:
+    image: cesanta/docker_auth
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./config:/config:ro
+      - ./ssl:/ssl
+    command: /config/auth_config.yml
+    container_name: "auth"
+
+  registry:
+    image: registry:2.2.1
+    ports:
+      - 5000:5000
+    volumes:
+      - ./ssl:/ssl
+      - registry-data:/var/lib/registry
+    container_name: "registry"
+    environment:
+      - REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/var/lib/registry
+      - REGISTRY_AUTH=token
+      - REGISTRY_AUTH_TOKEN_REALM=https://auth:5001/auth # the authentication server URI
+      - REGISTRY_AUTH_TOKEN_SERVICE="registry"
+      - REGISTRY_AUTH_TOKEN_ISSUER="auth_service" # Should be the same as token.issuer from authenticated-registry/config/auth_config.yml
+      - REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE=/ssl/server.pem
+
+volumes:
+  registry-data: # the real name will be <parent-folder-name>_registry-data (dash '-' int he folder name will be removed). eg. authenticatedregistry_registry-data
+    driver: local

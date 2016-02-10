@@ -1,0 +1,28 @@
+server:  # Server settings.
+  # Address to listen on.
+  addr: ":5001"
+  # TLS certificate and key.
+  certificate: "/ssl/server.pem"
+  key: "/ssl/server.key"
+
+token:  # Settings for the tokens.
+  issuer: "auth_service"  # Must match issuer in the Registry config.
+  expiration: 900
+
+
+# Static user map.
+users:
+  # Password is specified as a BCrypt hash. Use htpasswd -B to generate.
+  "admin":
+    password: "$2y$05$C3oDhd2O3nvcacmvGxojN.MPPvcV7LApYQU3meFMU5GeC27kb.0sK"
+  "jgsqware": # my user
+    password: "$2y$05$NbdXlgQWKZBy6F2zBiX.Ue.k4ui/7yVUYt.ysxqymVi4EtAeduaga"
+
+acl:
+  # Admin has full access to everything.
+  - match: {account: "admin"}
+    actions: ["*"]
+  # Users have full right on their repository
+  - match: {account: "/.+/", name: "${account}/*"}
+    actions: ["*"]
+  # Access is denied by default.
